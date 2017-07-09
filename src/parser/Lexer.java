@@ -5,7 +5,8 @@ import java.io.Reader;
 import java.io.StreamTokenizer;
 
 public class Lexer {
-    private StreamTokenizer tokenizer;
+    private final StreamTokenizer tokenizer;
+    private int line = 1;
 
     public Lexer(Reader reader) {
         tokenizer = new StreamTokenizer(reader);
@@ -32,9 +33,13 @@ public class Lexer {
             case '}': return new Token(Token.Type.RBRACE);
             case '(': return new Token(Token.Type.LPAREN);
             case ')': return new Token(Token.Type.RPAREN);
-            case StreamTokenizer.TT_EOL: return new Token(Token.Type.LINE);
+            case StreamTokenizer.TT_EOL: line++; return new Token(Token.Type.LINE);
             case StreamTokenizer.TT_WORD: return new Token(Token.Type.NAME, tokenizer.sval);
             default: return null;
         }
+    }
+
+    public int getLine() {
+        return line;
     }
 }

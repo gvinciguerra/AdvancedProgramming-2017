@@ -4,7 +4,7 @@ public class Token {
     public enum Type {LBRACE, RBRACE, LPAREN, RPAREN, LINE, BANG, EQUAL, COMMA, NAME}
 
     private String lexeme;
-    private Type type;
+    private final Type type;
 
     public Token(Type type) {
         this.type = type;
