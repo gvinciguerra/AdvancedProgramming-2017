@@ -1,6 +1,11 @@
 package model;
 
+import java.util.Set;
+
 public interface Constraint {
-    void propagate() throws InconsistencyException;
+    Set<Variable> propagate() throws InconsistencyException;
+
     boolean satisfied();
+
+    Set<Variable> getVariables();
 }

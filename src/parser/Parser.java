@@ -12,8 +12,8 @@ import java.util.function.Predicate;
 public class Parser {
     private Token lookahead;
     private final Lexer lexer;
-    private final List<Variable<String>> variables = new ArrayList<>();
     private final List<Constraint> constraints = new ArrayList<>();
+    private final List<Variable<String>> variables = new ArrayList<>();
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -119,7 +119,7 @@ public class Parser {
         return constraints;
     }
 
-    public List<Variable<String>> getVariables() {
-        return variables;
+    public List<Variable> getVariables() {
+        return new ArrayList<>(variables);
     }
 }
