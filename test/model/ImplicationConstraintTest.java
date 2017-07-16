@@ -17,8 +17,8 @@ class ImplicationConstraintTest {
     void setUp() {
         List<String> xDomain = Arrays.asList("1", "2", "3", "4");
         List<String> yDomain = Arrays.asList("a", "b", "c");
-        x = new Variable<>("x", new HashSet<>(xDomain));
-        y = new Variable<>("y", new HashSet<>(yDomain));
+        x = new Variable<>("x", new HashSet<>(xDomain), String.class);
+        y = new Variable<>("y", new HashSet<>(yDomain), String.class);
     }
 
     @Test

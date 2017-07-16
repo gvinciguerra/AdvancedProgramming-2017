@@ -1,9 +1,6 @@
 package model;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class ImplicationConstraint<L, R> implements Constraint {
@@ -18,22 +15,36 @@ public class ImplicationConstraint<L, R> implements Constraint {
         this.rvariable = rvar;
         this.filter = filter;
         this.premise = premise;
-        this.variables = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(lvariable, rvariable)));
+        this.variables = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(lvariable, rvariable)));
     }
 
     @Override
-    public Set<Variable> propagate() throws InconsistencyException {
+    public Set<Variable> getTriggerVariables() {
+        return Collections.singleton(lvariable);
+    }
+
+    @Override
+    public Map<Variable, Set> propagate() throws InconsistencyException {
+        Map<Variable, Set> domainsCopy = Collections.singletonMap(rvariable, new LinkedHashSet<>(rvariable.getCurrentDomain()));
         if (lvariable.isAssigned()
                 && premise.test(lvariable.getValue())
-                && rvariable.removeIf(filter) && rvariable.getCurrentDomain().isEmpty())
+                && rvariable.removeIf(filter)
+                && rvariable.getCurrentDomain().isEmpty()) {
+            domainsCopy.forEach(this::propagateHelper);
             throw new InconsistencyException();
-        return Collections.singleton(rvariable);
+        }
+        return domainsCopy;
+    }
+
+    private <E> void propagateHelper(Variable<E> variable, Set<E> set) {
+        variable.setCurrentDomain(set);
     }
 
     @Override
     public boolean satisfied() {
         return !lvariable.isAssigned()
                 || !premise.test(lvariable.getValue())
+                || (rvariable.isAssigned() && !filter.test(rvariable.getValue()))
                 || rvariable.getCurrentDomain().stream().allMatch(filter.negate());
     }
 

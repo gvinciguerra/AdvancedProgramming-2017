@@ -1,38 +1,40 @@
 package model;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class Variable<E> {
+    private E value;
     private final String name;
     private final Set<E> domain;
     private Set<E> currentDomain;
+    private final Class<E> type;
 
-    public Variable(String name, Set<E> domain) {
+
+    public Variable(String name, Set<E> domain, Class<E> type) {
         this.name = name;
-        this.domain = new HashSet<>(domain);
+        this.domain = Collections.unmodifiableSet(new HashSet<>(domain));
         this.currentDomain = new LinkedHashSet<>(domain);
-    }
-
-    public boolean contains(E o) {
-        return currentDomain.contains(o);
+        this.type = type;
     }
 
     public boolean removeIf(Predicate<E> filter) {
+        if (isAssigned() && filter.test(value)) {
+            currentDomain = Collections.emptySet();
+            value = null;
+            return true;
+        }
         return currentDomain.removeIf(filter);
     }
 
     public E getValue() {
-        return isAssigned() ? currentDomain.stream().findAny().get() : null;
+        return value;
     }
 
     public boolean assign(E o) {
-        if (getValue() == null && o != null)
-            currentDomain.retainAll(Collections.singleton(o));
-        return getValue().equals(o);
+        if (currentDomain.contains(o))
+            this.value = o;
+        return value.equals(o);
     }
 
     public Set<E> getDomain() {
@@ -45,14 +47,20 @@ public class Variable<E> {
 
     public void setCurrentDomain(Set<E> currentDomain) {
         assert domain.containsAll(currentDomain);
-        this.currentDomain = new HashSet<>(currentDomain);
+        this.currentDomain = new LinkedHashSet<>(currentDomain);
+        if (!currentDomain.contains(this.value))
+            this.value = null;
     }
 
     public boolean isAssigned() {
-        return currentDomain.size() == 1;
+        return value != null;
     }
 
     public String getName() {
         return name;
+    }
+
+    public Class<E> getType() {
+        return type;
     }
 }

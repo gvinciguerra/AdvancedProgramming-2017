@@ -49,6 +49,9 @@ class ParserTest {
         Lexer lexer = new Lexer(new StringReader(input));
         Parser parser = new Parser(lexer);
         parser.parse();
+        assertEquals("x", parser.getVariables().get(0).getName());
+        assertEquals("y", parser.getVariables().get(1).getName());
+        assertEquals(0, parser.getConstraints().size());
     }
 
     @Test

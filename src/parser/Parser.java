@@ -43,7 +43,7 @@ public class Parser {
             match(Token.Type.NAME);
             match(Token.Type.EQUAL);
             Set<String> domain = domain();
-            variables.add(new Variable<>(name, domain));
+            variables.add(new Variable<>(name, domain, String.class));
             match(Token.Type.LINE);
         } while (lookahead.getType() == Token.Type.NAME);
     }
@@ -92,15 +92,15 @@ public class Parser {
         Variable<String> lvariable = null;
         Variable<String> rvariable = null;
         for (Variable<String> v : variables) {
-            if (lvariable == null && v.contains(lvalue))
+            if (lvariable == null && v.getDomain().contains(lvalue))
                 lvariable = v;
-            if (rvariable == null && v.contains(rvalue))
+            if (rvariable == null && v.getDomain().contains(rvalue))
                 rvariable = v;
             if (lvariable != null && rvariable != null)
                 break;
         }
         if (lvariable == null || rvariable == null)
-            throw new ParseException(String.format("Value in (%s, %s) does not belong to any domain", lvalue, rvalue), 0);
+            throw new ParseException(String.format("Value in (%s, %s) not found in any domain", lvalue, rvalue), 0);
         Predicate<String> filter = equality ? u -> !u.equals(rvalue) : v -> v.equals(rvalue);
         constraints.add(new ImplicationConstraint<>(lvariable, w -> w.equals(lvalue), rvariable, filter));
     }
@@ -116,10 +116,10 @@ public class Parser {
     }
 
     public List<Constraint> getConstraints() {
-        return constraints;
+        return new ArrayList<>(constraints);
     }
 
-    public List<Variable> getVariables() {
+    public List<Variable<?>> getVariables() {
         return new ArrayList<>(variables);
     }
 }
