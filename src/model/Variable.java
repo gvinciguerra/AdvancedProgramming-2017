@@ -1,21 +1,23 @@
 package model;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class Variable<E> {
     private E value;
     private final String name;
     private final Set<E> domain;
-    private Set<E> currentDomain;
     private final Class<E> type;
-
+    private Set<E> currentDomain;
 
     public Variable(String name, Set<E> domain, Class<E> type) {
+        this.type = type;
         this.name = name;
         this.domain = Collections.unmodifiableSet(new HashSet<>(domain));
         this.currentDomain = new LinkedHashSet<>(domain);
-        this.type = type;
     }
 
     public boolean removeIf(Predicate<E> filter) {
@@ -24,7 +26,8 @@ public class Variable<E> {
             value = null;
             return true;
         }
-        return currentDomain.removeIf(filter);
+        currentDomain.removeIf(filter);
+        return currentDomain.isEmpty();
     }
 
     public E getValue() {
@@ -32,9 +35,14 @@ public class Variable<E> {
     }
 
     public boolean assign(E o) {
-        if (currentDomain.contains(o))
-            this.value = o;
-        return value.equals(o);
+        if (isAssigned() && !value.equals(o) || !currentDomain.contains(o))
+            return false;
+        value = o;
+        return true;
+    }
+
+    public void unassign() {
+        this.value = null;
     }
 
     public Set<E> getDomain() {
@@ -62,5 +70,10 @@ public class Variable<E> {
 
     public Class<E> getType() {
         return type;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s = %s", this.getName(), this.getValue());
     }
 }

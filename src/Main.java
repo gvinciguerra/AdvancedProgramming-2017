@@ -17,7 +17,7 @@ public class Main {
         Solver solver = new Solver(parser.getVariables(), parser.getConstraints());
         solver.solutionsIterator().forEachRemaining(s -> System.out.println(s.toString()));
         System.out.println();
-        System.out.println(solver.backtrackingSearch().toString());
+        // System.out.println(solver.backtrackingSearch().toString());
 
         String sudoku = "x11 = {a1, a2, a3, a4}\n"
                 + "x12 = {b1, b2, b3, b4}\n"
@@ -34,6 +34,6 @@ public class Main {
         Solver solver2 = new Solver(parser2.getVariables(), parser2.getConstraints());
         solver2.solutionsIterator().forEachRemaining(s -> System.out.println(s.toString()));
         System.out.println();
-        System.out.println(solver2.backtrackingSearch().toString());
+        // System.out.println(solver2.backtrackingSearch().toString());
     }
 }

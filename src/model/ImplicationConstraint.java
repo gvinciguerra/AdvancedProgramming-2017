@@ -9,6 +9,7 @@ public class ImplicationConstraint<L, R> implements Constraint {
     private final Variable<L> lvariable;
     private final Variable<R> rvariable;
     private final Set<Variable> variables;
+    private final Set<Variable> triggerVariables;
 
     public ImplicationConstraint(Variable<L> lvar, Predicate<L> premise, Variable<R> rvar, Predicate<R> filter) {
         this.lvariable = lvar;
@@ -16,11 +17,12 @@ public class ImplicationConstraint<L, R> implements Constraint {
         this.filter = filter;
         this.premise = premise;
         this.variables = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(lvariable, rvariable)));
+        this.triggerVariables = Collections.singleton(lvariable);
     }
 
     @Override
     public Set<Variable> getTriggerVariables() {
-        return Collections.singleton(lvariable);
+        return triggerVariables;
     }
 
     @Override
@@ -28,8 +30,7 @@ public class ImplicationConstraint<L, R> implements Constraint {
         Map<Variable, Set> domainsCopy = Collections.singletonMap(rvariable, new LinkedHashSet<>(rvariable.getCurrentDomain()));
         if (lvariable.isAssigned()
                 && premise.test(lvariable.getValue())
-                && rvariable.removeIf(filter)
-                && rvariable.getCurrentDomain().isEmpty()) {
+                && rvariable.removeIf(filter)) {
             domainsCopy.forEach(this::propagateHelper);
             throw new InconsistencyException();
         }
