@@ -63,11 +63,8 @@ class SolverTest {
         Constraint c1 = new ImplicationConstraint<>(z, z -> false, z, z -> true); // useless
         Solver solver = new Solver(Arrays.asList(y, z), Collections.singletonList(c1));
         int c = 0;
-        Iterator<Solution> iterator = solver.solutionsIterator();
-        while (iterator.hasNext()) {
+        for (Iterator<Solution> iterator = solver.solutionsIterator(); iterator.hasNext(); c++)
             iterator.next();
-            c++;
-        }
         assertEquals(y.getDomain().size() * z.getDomain().size(), c);
     }
 
@@ -85,12 +82,27 @@ class SolverTest {
         Constraint c2 = new ImplicationConstraint<>(y, y -> y.equals("b"), z, z -> z.equals(1));
         Constraint c3 = new ImplicationConstraint<>(x, x -> true, z, z -> !z.equals(1));
         Constraint c4 = new ImplicationConstraint<>(x, x -> true, x, x -> !x.equals("1"));
-        Solver solver = new Solver(Arrays.asList(x, y, z), Arrays.asList(c1, c2, c3, c4));
+        Constraint c5 = new ImplicationConstraint<>(x, x -> true, y, y -> false); // useless
+        List<Constraint> constraints = Arrays.asList(c1, c2, c3, c4, c5);
+        Solver solver = new Solver(Arrays.asList(x, y, z), constraints);
         Iterator<Solution> iterator = solver.solutionsIterator();
-        Solution result = iterator.next();
-        assertEquals("1", result.getValue(x));
-        assertEquals("a", result.getValue(y));
-        assertEquals(new Integer(1), result.getValue(z));
+        Solution solution = iterator.next();
+        assertEquals("1", solution.getValue(x));
+        assertEquals("a", solution.getValue(y));
+        assertEquals(new Integer(1), solution.getValue(z));
         assertFalse(iterator.hasNext());
+        assertTrue(solution.getExplanation().size() < constraints.size()); // 1 is useless
+    }
+
+    @Test
+    void solutionsIterator5() {
+        Constraint c1 = new ImplicationConstraint<>(x, x -> false, y, y -> true);
+        Constraint c2 = new ImplicationConstraint<>(y, y -> y.equals("∞"), x, x -> false);
+        Solver solver = new Solver(Arrays.asList(x, y), Arrays.asList(c1, c2));
+        int c = 0;
+        for (Iterator<Solution> iterator = solver.solutionsIterator(); iterator.hasNext(); c++) {
+            assertEquals(0, iterator.next().getExplanation().size()); // both constraints are useless
+        }
+        assertEquals(x.getDomain().size() * y.getDomain().size(), c);
     }
 }

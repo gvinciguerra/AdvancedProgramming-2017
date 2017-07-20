@@ -48,19 +48,21 @@ public class Solver {
         private boolean noMoreSolutions;
         private final Deque<Object> assignments = new LinkedList<>();
         private final Queue<Solution> solutionsQueue = new LinkedList<>();
+        private final Deque<List<Constraint>> explanationStack = new LinkedList<>();
         private final Deque<Map<Variable, Set>> propagationsStack = new LinkedList<>();
+        private final Map<Variable, List<Constraint>> triggeringConstraints = new HashMap<>();
 
         private void lazyFindNextSolution() {
             while (true) {
+                assert propagationsStack.size() <= variables.size();
+                assert propagationsStack.size() == assignments.size();
+
                 if (!solutionsQueue.isEmpty()) {
                     this.nextSolution = solutionsQueue.poll();
                     return;
                 }
-                assert propagationsStack.size() <= variables.size();
-                assert propagationsStack.size() == assignments.size();
 
-                // Inconsistency. Backtrack
-                while (variables.stream().anyMatch(v -> v.getCurrentDomain().isEmpty())) {
+                while (variables.stream().anyMatch(v -> v.getCurrentDomain().isEmpty())) { // Inconsistency. Backtrack
                     if (propagationsStack.isEmpty()) {
                         noMoreSolutions = true;
                         return;
@@ -71,17 +73,16 @@ public class Solver {
                 boolean isAssignmentComplete = variables.stream().allMatch(Variable::isAssigned);
                 if (!isAssignmentComplete) {
                     Variable unassigned = selectUnassignedVariable();
-                    List<Constraint> constraintsToTrigger = constraints.stream()
-                            .filter(c -> c.getTriggerVariables().contains(unassigned)).collect(Collectors.toList());
                     assert unassigned.getCurrentDomain().size() > 0;
                     Object o = unassigned.getCurrentDomain().iterator().next();
-                    tryAssignAndPropagate(unassigned, o, constraintsToTrigger);
+                    tryAssignAndPropagate(unassigned, o);
                     continue;
                 }
 
                 boolean isASolution = constraints.stream().allMatch(Constraint::satisfied);
                 if (isASolution) {
-                    nextSolution = new Solution(variables);
+                    List<Constraint> flattenExplanation = explanationStack.stream().flatMap(List::stream).collect(Collectors.toList());
+                    nextSolution = new Solution(variables, flattenExplanation);
                     undoLastAssignment();
                     return;
                 }
@@ -89,6 +90,7 @@ public class Solver {
         }
 
         private void undoLastAssignment() {
+            explanationStack.pop();
             propagationsStack.pop().forEach(Variable::setCurrentDomain);
             Variable toUndo = variables.get(assignments.size()-1);
             Object o = assignments.pop();
@@ -96,23 +98,34 @@ public class Solver {
             toUndo.getCurrentDomain().remove(o);
         }
 
-        private void tryAssignAndPropagate(Variable unassigned, Object value, List<Constraint> constraintsToCheck) {
+        private <E> void tryAssignAndPropagate(Variable<E> unassigned, E value) {
             if (!unassigned.assign(value))
                 return;
 
             Map<Variable, Set> state = new HashMap<>();
-            variables.stream().filter(v -> !v.isAssigned()).forEach(w -> state.put(w, new LinkedHashSet<>(w.getCurrentDomain())));
-            for (Constraint c : constraintsToCheck)
+            variables.stream().filter(v -> !v.isAssigned()).forEach(v -> state.put(v, new LinkedHashSet<>(v.getCurrentDomain())));
+            List<Constraint> explanationStep = new LinkedList<>();
+            for (Constraint c : triggeringConstraints.getOrDefault(unassigned, Collections.emptyList())) {
                 try {
-                    c.propagate().forEach((v, s) -> { state.putIfAbsent(v, s);  state.get(v).addAll(s); });
+                    boolean propagationDidChangeDomains = false;
+                    for (Map.Entry<Variable, Set> savedState : c.propagate().entrySet()) {
+                        if (savedState.getKey().getCurrentDomain().size() != savedState.getValue().size())
+                            propagationDidChangeDomains = true;
+                        if (null == state.putIfAbsent(savedState.getKey(), savedState.getValue()))
+                            state.get(savedState.getKey()).addAll(savedState.getValue());
+                    }
+                    if (propagationDidChangeDomains)
+                        explanationStep.add(c);
                 } catch (InconsistencyException e) {
                     state.forEach(Variable::setCurrentDomain);
                     state.clear();
                     unassigned.getCurrentDomain().remove(value);
                     return;
                 }
+            }
             assignments.push(value);
             propagationsStack.push(state);
+            explanationStack.push(explanationStep);
         }
 
         @Override
@@ -134,6 +147,11 @@ public class Solver {
         }
 
         public SolutionsIterator() {
+            for (Constraint constraint : constraints)
+                for (Variable variable : constraint.getTriggerVariables()) {
+                    triggeringConstraints.putIfAbsent(variable, new LinkedList<>());
+                    triggeringConstraints.get(variable).add(constraint);
+                }
         }
     }
 }

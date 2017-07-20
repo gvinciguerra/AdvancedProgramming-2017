@@ -1,13 +1,19 @@
+import model.Constraint;
 import model.Variable;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Solution {
     private final Map<Variable<?>, Object> solution = new LinkedHashMap<>();
+    private final Collection<Constraint> explanation;
 
     public Solution(Collection<Variable<?>> variables) {
+        this.explanation = Collections.emptyList();
+        variables.forEach(v -> solution.put(v, v.getValue()));
+    }
+
+    public Solution(Collection<Variable<?>> variables, Collection<Constraint> explanation) {
+        this.explanation = explanation;
         variables.forEach(v -> solution.put(v, v.getValue()));
     }
 
@@ -21,5 +27,9 @@ public class Solution {
         StringBuilder stringBuilder = new StringBuilder();
         solution.forEach((v, o) -> stringBuilder.append(String.format("%s=%s ", v.getName(), o)));
         return stringBuilder.toString();
+    }
+
+    public Collection<Constraint> getExplanation() {
+        return explanation;
     }
 }
