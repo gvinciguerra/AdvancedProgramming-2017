@@ -47,7 +47,6 @@ public class Solver {
         private Solution nextSolution;
         private boolean noMoreSolutions;
         private final Deque<Object> assignments = new LinkedList<>();
-        private final Queue<Solution> solutionsQueue = new LinkedList<>();
         private final Deque<List<Constraint>> explanationStack = new LinkedList<>();
         private final Deque<Map<Variable, Set>> propagationsStack = new LinkedList<>();
         private final Map<Variable, List<Constraint>> triggeringConstraints = new HashMap<>();
@@ -56,11 +55,7 @@ public class Solver {
             while (true) {
                 assert propagationsStack.size() <= variables.size();
                 assert propagationsStack.size() == assignments.size();
-
-                if (!solutionsQueue.isEmpty()) {
-                    this.nextSolution = solutionsQueue.poll();
-                    return;
-                }
+                assert assignments.size() == variables.stream().filter(Variable::isAssigned).count();
 
                 while (variables.stream().anyMatch(v -> v.getCurrentDomain().isEmpty())) { // Inconsistency. Backtrack
                     if (propagationsStack.isEmpty()) {
@@ -120,6 +115,7 @@ public class Solver {
                     state.forEach(Variable::setCurrentDomain);
                     state.clear();
                     unassigned.getCurrentDomain().remove(value);
+                    unassigned.unassign();
                     return;
                 }
             }
