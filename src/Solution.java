@@ -7,12 +7,12 @@ public class Solution {
     private final Map<Variable<?>, Object> solution = new LinkedHashMap<>();
     private final Collection<Constraint> explanation;
 
-    public Solution(Collection<Variable<?>> variables) {
+    public Solution(Collection<? extends Variable<?>> variables) {
         this.explanation = Collections.emptyList();
         variables.forEach(v -> solution.put(v, v.getValue()));
     }
 
-    public Solution(Collection<Variable<?>> variables, Collection<Constraint> explanation) {
+    public Solution(Collection<? extends Variable<?>> variables, Collection<Constraint> explanation) {
         this.explanation = explanation;
         variables.forEach(v -> solution.put(v, v.getValue()));
     }

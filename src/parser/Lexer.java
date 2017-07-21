@@ -14,6 +14,7 @@ public class Lexer {
         tokenizer.wordChars('a', 'z');
         tokenizer.wordChars('A', 'Z');
         tokenizer.wordChars('_', '_');
+        tokenizer.wordChars('@', '@');
         tokenizer.ordinaryChar('!');
         tokenizer.ordinaryChar('=');
         tokenizer.ordinaryChar(',');

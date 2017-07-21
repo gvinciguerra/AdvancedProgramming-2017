@@ -119,7 +119,7 @@ public class Parser {
         return new ArrayList<>(constraints);
     }
 
-    public List<Variable<?>> getVariables() {
+    public List<Variable<String>> getVariables() {
         return new ArrayList<>(variables);
     }
 }

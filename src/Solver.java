@@ -9,7 +9,7 @@ public class Solver {
     private final List<Variable<?>> variables;
     private final List<Constraint> constraints;
 
-    public Solver(List<Variable<?>> variables, List<Constraint> constraints) {
+    public Solver(List<? extends Variable<?>> variables, List<Constraint> constraints) {
         this.variables = new ArrayList<>(variables);
         this.constraints = new ArrayList<>(constraints);
     }
@@ -142,7 +142,7 @@ public class Solver {
             return !this.noMoreSolutions;
         }
 
-        public SolutionsIterator() {
+        private SolutionsIterator() {
             for (Constraint constraint : constraints)
                 for (Variable variable : constraint.getTriggerVariables()) {
                     triggeringConstraints.putIfAbsent(variable, new LinkedList<>());

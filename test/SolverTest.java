@@ -3,7 +3,12 @@ import model.ImplicationConstraint;
 import model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import parser.Lexer;
+import parser.Parser;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.text.ParseException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,9 +105,28 @@ class SolverTest {
         Constraint c2 = new ImplicationConstraint<>(y, y -> y.equals("∞"), x, x -> false);
         Solver solver = new Solver(Arrays.asList(x, y), Arrays.asList(c1, c2));
         int c = 0;
-        for (Iterator<Solution> iterator = solver.solutionsIterator(); iterator.hasNext(); c++) {
+        for (Iterator<Solution> iterator = solver.solutionsIterator(); iterator.hasNext(); c++)
             assertEquals(0, iterator.next().getExplanation().size()); // both constraints are useless
-        }
         assertEquals(x.getDomain().size() * y.getDomain().size(), c);
+    }
+
+    @Test
+    void solutionsIterator6() throws IOException, ParseException {
+        String problem = "x11 = {a1, a2, a3, a4}\n"
+                + "x12 = {b1, b2, b3, b4}\n"
+                + "x21 = {c1, c2, c3, c4}\n"
+                + "x22 = {d1, d2, d3, d4}\n"
+                + "{}\n!{"
+                + "(a1, b1), (a1, c1), (a2, b2), (a2, c2), (a3, b3), (a3, c3), (a4, b4), (a4, c4),"
+                + "(b1, a1), (b1, d1), (b2, a2), (b2, d2), (b3, a3), (b3, d3), (b4, a4), (b4, d4),"
+                + "(c1, a1), (c1, d1), (c2, a2), (c2, d2), (c3, a3), (c3, d3), (c4, a4), (c4, d4),"
+                + "(d1, b1), (d1, c1), (d2, b2), (d2, c2), (d3, b3), (d3, c3), (d4, b4), (d4, c4)}";
+        Parser parser = new Parser(new Lexer(new StringReader(problem)));
+        parser.parse();
+        Solver solver = new Solver(parser.getVariables(), parser.getConstraints());
+        int c = 0;
+        for (Iterator<Solution> iterator = solver.solutionsIterator(); iterator.hasNext(); c++)
+            assertTrue(iterator.next().getExplanation().size() > 0);
+        assertEquals(84, c);
     }
 }
