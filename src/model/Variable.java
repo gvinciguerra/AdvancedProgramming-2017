@@ -17,7 +17,7 @@ public class Variable<E> {
         this.type = type;
         this.name = name;
         this.domain = Collections.unmodifiableSet(new HashSet<>(domain));
-        this.currentDomain = new LinkedHashSet<>(domain);
+        currentDomain = new LinkedHashSet<>(domain);
     }
 
     public boolean removeIf(Predicate<E> filter) {
@@ -42,7 +42,7 @@ public class Variable<E> {
     }
 
     public void unassign() {
-        this.value = null;
+        value = null;
     }
 
     public Set<E> getDomain() {
@@ -56,8 +56,8 @@ public class Variable<E> {
     public void setCurrentDomain(Set<E> currentDomain) {
         assert domain.containsAll(currentDomain);
         this.currentDomain = new LinkedHashSet<>(currentDomain);
-        if (!currentDomain.contains(this.value))
-            this.value = null;
+        if (!currentDomain.contains(value))
+            value = null;
     }
 
     public boolean isAssigned() {
@@ -74,6 +74,6 @@ public class Variable<E> {
 
     @Override
     public String toString() {
-        return String.format("%s = %s", this.getName(), this.getValue());
+        return String.format("%s = %s", getName(), getValue());
     }
 }

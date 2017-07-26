@@ -8,7 +8,7 @@ public class Solution {
     private final Collection<Constraint> explanation;
 
     public Solution(Collection<? extends Variable<?>> variables) {
-        this.explanation = Collections.emptyList();
+        explanation = Collections.emptyList();
         variables.forEach(v -> solution.put(v, v.getValue()));
     }
 

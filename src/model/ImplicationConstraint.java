@@ -12,12 +12,12 @@ public class ImplicationConstraint<L, R> implements Constraint {
     private final Set<Variable> triggerVariables;
 
     public ImplicationConstraint(Variable<L> lvar, Predicate<L> premise, Variable<R> rvar, Predicate<R> filter) {
-        this.lvariable = lvar;
-        this.rvariable = rvar;
+        lvariable = lvar;
+        rvariable = rvar;
         this.filter = filter;
         this.premise = premise;
-        this.variables = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(lvariable, rvariable)));
-        this.triggerVariables = Collections.singleton(lvariable);
+        variables = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(lvariable, rvariable)));
+        triggerVariables = Collections.singleton(lvariable);
     }
 
     @Override
@@ -51,6 +51,6 @@ public class ImplicationConstraint<L, R> implements Constraint {
 
     @Override
     public Set<Variable> getVariables() {
-        return this.variables;
+        return variables;
     }
 }

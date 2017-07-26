@@ -100,7 +100,7 @@ public class Solver {
             Map<Variable, Set> state = new HashMap<>();
             variables.stream().filter(v -> !v.isAssigned()).forEach(v -> state.put(v, new LinkedHashSet<>(v.getCurrentDomain())));
             List<Constraint> explanationStep = new LinkedList<>();
-            for (Constraint c : triggeringConstraints.getOrDefault(unassigned, Collections.emptyList())) {
+            for (Constraint c : triggeringConstraints.getOrDefault(unassigned, Collections.emptyList()))
                 try {
                     boolean propagationDidChangeDomains = false;
                     for (Map.Entry<Variable, Set> savedState : c.propagate().entrySet()) {
@@ -113,12 +113,10 @@ public class Solver {
                         explanationStep.add(c);
                 } catch (InconsistencyException e) {
                     state.forEach(Variable::setCurrentDomain);
-                    state.clear();
                     unassigned.getCurrentDomain().remove(value);
                     unassigned.unassign();
                     return;
                 }
-            }
             assignments.push(value);
             propagationsStack.push(state);
             explanationStack.push(explanationStep);
@@ -126,20 +124,20 @@ public class Solver {
 
         @Override
         public Solution next() {
-            if (this.noMoreSolutions)
+            if (noMoreSolutions)
                 throw new NoSuchElementException();
-            if (this.nextSolution == null)
+            if (nextSolution == null)
                 lazyFindNextSolution();
-            Solution temp = this.nextSolution;
-            this.nextSolution = null;
+            Solution temp = nextSolution;
+            nextSolution = null;
             return temp;
         }
 
         @Override
         public boolean hasNext() {
-            if (!this.noMoreSolutions && this.nextSolution == null)
+            if (!noMoreSolutions && nextSolution == null)
                 lazyFindNextSolution();
-            return !this.noMoreSolutions;
+            return !noMoreSolutions;
         }
 
         private SolutionsIterator() {
